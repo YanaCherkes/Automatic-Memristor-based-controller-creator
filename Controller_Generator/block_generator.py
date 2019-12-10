@@ -59,19 +59,26 @@ def block_generator (json_file_name, processing_area_init, num_of_bits):
     block_help_generator.signals(vhdl_block)
     block_help_generator.begin(vhdl_block)
     
-    
+    #in case there is no initialization at the begining of the simpler output
+    line = simpler.readline().replace(',\n','')
+        if line.find("Initialization") != -1:
+            dest = re.findall(r"\(([0-9_]+)\)", line)
+            block_help_generator.init_state(vhdl_block,i, dest, row_size, processing_area_init, num_of_inputs)
+        else:
+            file.writelines("					when state"+str(numState)+ "=>\n");
+            
     #Read execution order
     #i - cycle number
     for i in range(int(total_cycles) + 1):
         line = simpler.readline().replace(',\n','')
-        if line.find("Initialization") != -1:
+        if line.find("Initialization") != -1: #reuse columns
             dest = re.findall(r"\(([0-9_]+)\)", line)
             block_help_generator.init_state(vhdl_block,i, dest, row_size, processing_area_init, num_of_inputs)
             
         elif line.find("inv1") != -1:
             dest = re.findall(r"\(([0-9_]+)\)", line)
             output_col = dest[0]
-            input_cols = dest[1]
+            input_cols = dest[1:]
             calc_state(vhdl_block, i, 0,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
     
         elif line.find("nor2") != -1:
@@ -117,6 +124,7 @@ def calc_state(file, numState, magicState,  inputs, output, n, total_cycles, num
         "						ena_magic_sig	<= '1'; \n" +
         "						row_init	<= ROW_INIT_ADDR;\n" +
         "						row_fin		<= ROW_FIN_ADDR;	\n" )  ;   
+   
 
     if magicStateStr == "00":
         if (int(inputs[0]) >= int(num_of_inputs)):
