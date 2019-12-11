@@ -64,41 +64,76 @@ def block_generator (json_file_name, processing_area_init, num_of_bits):
     line = simpler.readline().replace(',\n','')
     if line.find("Initialization") != -1:
         dest = re.findall(r"\(([0-9_]+)\)", line)
-        block_help_generator.init_state(vhdl_block,0, dest, row_size, processing_area_init, num_of_inputs)
+        block_help_generator.init_state(vhdl_block,numState, dest, row_size, processing_area_init, num_of_inputs)
+        #Read execution order
+        #i - cycle number
+        for i in range(int(total_cycles) + 1):
+            line = simpler.readline().replace(',\n','')
+            if line.find("Initialization") != -1: #reuse columns
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                block_help_generator.init_state(vhdl_block,i+1, dest, row_size, processing_area_init, num_of_inputs)
+                
+            elif line.find("inv1") != -1:
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                output_col = dest[0]
+                input_cols = dest[1:]
+                calc_state(vhdl_block, i+1, 0,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+        
+            elif line.find("nor2") != -1:
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                output_col = dest[0]
+                input_cols = dest[1:]
+                calc_state(vhdl_block, i+1, 1,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+        
+            elif line.find("nor3") != -1:
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                output_col = dest[0]
+                input_cols = dest[1:]
+                calc_state(vhdl_block, i+1, 2,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+                    
+            elif line.find("nor4") != -1:
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                output_col = dest[0]
+                input_cols = dest[1:]
+                calc_state(vhdl_block, i+1, 3,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+        
     else:
         vhdl_block.writelines("					when state"+str(numState)+ "=>\n");
-            
-    #Read execution order
-    #i - cycle number
-    for i in range(int(total_cycles) + 1):
-        line = simpler.readline().replace(',\n','')
-        if line.find("Initialization") != -1: #reuse columns
-            dest = re.findall(r"\(([0-9_]+)\)", line)
-            block_help_generator.init_state(vhdl_block,i+1, dest, row_size, processing_area_init, num_of_inputs)
-            
-        elif line.find("inv1") != -1:
-            dest = re.findall(r"\(([0-9_]+)\)", line)
-            output_col = dest[0]
-            input_cols = dest[1:]
-            calc_state(vhdl_block, i+1, 0,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
-    
-        elif line.find("nor2") != -1:
-            dest = re.findall(r"\(([0-9_]+)\)", line)
-            output_col = dest[0]
-            input_cols = dest[1:]
-            calc_state(vhdl_block, i+1, 1,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
-    
-        elif line.find("nor3") != -1:
-            dest = re.findall(r"\(([0-9_]+)\)", line)
-            output_col = dest[0]
-            input_cols = dest[1:]
-            calc_state(vhdl_block, i+1, 2,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+        vhdl_block.writelines(
+                "						--update next state signals\n" +
+                "						current_state	<= state"+str(numState+1)+";\n");
+        #Read execution order
+        #i - cycle number
+        for i in range(int(total_cycles) +1):
+            if line.find("Initialization") != -1: #reuse columns
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                block_help_generator.init_state(vhdl_block,i+1, dest, row_size, processing_area_init, num_of_inputs)
                 
-        elif line.find("nor4") != -1:
-            dest = re.findall(r"\(([0-9_]+)\)", line)
-            output_col = dest[0]
-            input_cols = dest[1:]
-            calc_state(vhdl_block, i+1, 3,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+            elif line.find("inv1") != -1:
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                output_col = dest[0]
+                input_cols = dest[1:]
+                calc_state(vhdl_block, i+1, 0,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+        
+            elif line.find("nor2") != -1:
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                output_col = dest[0]
+                input_cols = dest[1:]
+                calc_state(vhdl_block, i+1, 1,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+        
+            elif line.find("nor3") != -1:
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                output_col = dest[0]
+                input_cols = dest[1:]
+                calc_state(vhdl_block, i+1, 2,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+                    
+            elif line.find("nor4") != -1:
+                dest = re.findall(r"\(([0-9_]+)\)", line)
+                output_col = dest[0]
+                input_cols = dest[1:]
+                calc_state(vhdl_block, i+1, 3,  input_cols, output_col, num_of_bits, total_cycles, num_of_inputs, row_size, first_output, num_of_outputs)
+            line = simpler.readline().replace(',\n','')
+   
     
     block_help_generator.finish_state(vhdl_block)
     
