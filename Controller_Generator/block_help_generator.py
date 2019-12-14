@@ -49,7 +49,7 @@ def init_state(file, numState, dest_vector, row_size, processing_area_init, num_
         elif int(i) < int(num_of_inputs):
             continue;
         else:
-         calculated_column = int(processing_area_init) + int(i) - int(num_of_inputs) #calculaate the column to initialize
+         calculated_column = int(i) - int(num_of_inputs) #calculaate the column to initialize
          file.writelines(
     "						COLUMN_OUT("+ str(calculated_column) + " + CONV_INTEGER(process_area_in)) <= Vw1; \n");
      #initiate rows
